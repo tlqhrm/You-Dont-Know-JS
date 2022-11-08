@@ -1,7 +1,7 @@
 # Table of contents
 
 * [You Don't Know JS Yet (책 시리즈) - 제 2판](README.md)
-* [preface](preface.md)
+* [머리말](preface.md)
 * [You Don't Know JS Yet: Get Started - 2nd Edition](get-started/README.md)
   * [You Don't Know JS Yet: Get Started - 2nd Edition](get-started/toc.md)
   * [foreword](get-started/foreword.md)

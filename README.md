@@ -1,12 +1,12 @@
 # You Don't Know JS Yet (책 시리즈) - 제 2판
 
-This is a series of books diving deep into the core mechanisms of the JavaScript language. This is the **second edition** of the book series:
+이 책 시리즈는 자바스크립트의 핵심적인 작동 원리에 대해 깊이 탐구합니다. 이것은 책 시리즈의 두 번째 판입니다. &#x20;
 
-[![](get-started/images/cover.png)](https://leanpub.com/ydkjsy-get-started)   [![](scope-closures/images/cover.png)](https://leanpub.com/ydkjsy-scope-closures)  ...
+[![](<.gitbook/assets/cover (1).png>)](https://leanpub.com/ydkjsy-get-started)   [![](.gitbook/assets/cover.png)](https://leanpub.com/ydkjsy-scope-closures)  ...
 
-**To read more about the motivations and perspective behind this book series, check out the** [**Preface**](preface.md)**.**
+이 책 시리즈의 동기와 관점에 대해 더 많이 읽으려면 [머리말](preface.md)을 확인하세요.
 
-If you're looking for the previous **first edition** books, [they can be found here](https://github.com/getify/You-Dont-Know-JS/blob/1st-ed/README.md).
+이전 초판 책을 찾으시는 분들은 [여기서](https://github.com/getify/You-Dont-Know-JS/blob/1st-ed/README.md) 찾으실 수 있습니다.
 
 ## Titles
 
