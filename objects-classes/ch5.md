@@ -1,39 +1,42 @@
-# You Don't Know JS Yet: Objects & Classes - 2nd Edition
-# Chapter 5: Delegation
+# ch5
 
-| NOTE: |
-| :--- |
+## You Don't Know JS Yet: Objects & Classes - 2nd Edition
+
+## Chapter 5: Delegation
+
+| NOTE:            |
+| ---------------- |
 | Work in progress |
 
 We've thoroughly explored objects, prototypes, classes, and now the `this` keyword. But we're now going to revisit what we've learned so far from a bit of a different perspective.
 
 What if you could leverage all the power of the objects, prototypes, and dynamic `this` mechanisms together, without ever using `class` or any of its descendants?
 
-In fact, I would argue JS is inherently less class-oriented than the `class` keyword might appear. Because JS is a dynamic, prototypal language, its strong suit is actually... *delegation*.
+In fact, I would argue JS is inherently less class-oriented than the `class` keyword might appear. Because JS is a dynamic, prototypal language, its strong suit is actually... _delegation_.
 
-## Preamble
+### Preamble
 
-Before we begin looking at delegation, I want to offer a word of caution. This perspective on JS's object `[[Prototype]]` and `this` function context mechanisms is *not* mainstream. It's *not* how framework authors and libraries utilize JS. You won't, to my knowledge, find any big apps out there using this pattern.
+Before we begin looking at delegation, I want to offer a word of caution. This perspective on JS's object `[[Prototype]]` and `this` function context mechanisms is _not_ mainstream. It's _not_ how framework authors and libraries utilize JS. You won't, to my knowledge, find any big apps out there using this pattern.
 
 So why on earth would I devote a chapter to such a pattern, if it's so unpopular?
 
 Good question. The cheeky answer is: because it's my book and I can do what I feel like!
 
-But the deeper answer is, because I think developing *this* understanding of one of the language's core pillars helps you *even if* all you ever do is use `class`-style JS patterns.
+But the deeper answer is, because I think developing _this_ understanding of one of the language's core pillars helps you _even if_ all you ever do is use `class`-style JS patterns.
 
-To be clear, delegation is not my invention. It's been around as a design pattern for decades. And for a long time, developers argued that prototypal delegation was *just* the dynamic form of inheritance.[^TreatyOfOrlando] But I think that was a mistake to conflate the two.[^ClassVsPrototype]
+To be clear, delegation is not my invention. It's been around as a design pattern for decades. And for a long time, developers argued that prototypal delegation was _just_ the dynamic form of inheritance.\[^TreatyOfOrlando] But I think that was a mistake to conflate the two.\[^ClassVsPrototype]
 
 For the purposes of this chapter, I'm going to present delegation, as implemented via JS mechanics, as an alternative design pattern, positioned somewhere between class-orientation and object-closure/module patterns.
 
-The first step is to *de-construct* the `class` mechanism down to its individual parts. Then we'll cherry-pick and mix the parts a bit differently.
+The first step is to _de-construct_ the `class` mechanism down to its individual parts. Then we'll cherry-pick and mix the parts a bit differently.
 
-## What's A Constructor, Anyway?
+### What's A Constructor, Anyway?
 
-In Chapter 3, we saw `constructor(..)` as the main entry point for construction of a `class` instance. But the `constructor(..)` doesn't actually do any *creation* work, it's only *initialization* work. In other words, the instance is already created by the time the `constructor(..)` runs and initializes it -- e.g., `this.whatever` types of assignments.
+In Chapter 3, we saw `constructor(..)` as the main entry point for construction of a `class` instance. But the `constructor(..)` doesn't actually do any _creation_ work, it's only _initialization_ work. In other words, the instance is already created by the time the `constructor(..)` runs and initializes it -- e.g., `this.whatever` types of assignments.
 
-So where does the *creation* work actually happen? In the `new` operator. As the section "New Context Invocation" in Chapter 4 explains, there are four steps the `new` keyword performs; the first of those is the creation of a new empty object (the instance). The `constructor(..)` isn't even invoked until step 3 of `new`'s efforts.
+So where does the _creation_ work actually happen? In the `new` operator. As the section "New Context Invocation" in Chapter 4 explains, there are four steps the `new` keyword performs; the first of those is the creation of a new empty object (the instance). The `constructor(..)` isn't even invoked until step 3 of `new`'s efforts.
 
-But `new` is not the only -- or perhaps even, best -- way to *create* an object "instance". Consider:
+But `new` is not the only -- or perhaps even, best -- way to _create_ an object "instance". Consider:
 
 ```js
 // a non-class "constructor"
@@ -57,7 +60,7 @@ point.y;                    // 4
 
 There's no `class`, just a regular function definition (`Point2d(..)`). There's no `new` invocation, just a regular function call (`Point2d(3,4)`). And there's no `this` references, just regular object property assignments (`instance.x = ..`).
 
-The term that's most often used to refer to this pattern of code is that `Point2d(..)` here is a *factory function*. Invoking it causes the construction (creation and initialization) of an object, and returns that back to us. That's an extremely common pattern, at least as common as class-oriented code.
+The term that's most often used to refer to this pattern of code is that `Point2d(..)` here is a _factory function_. Invoking it causes the construction (creation and initialization) of an object, and returns that back to us. That's an extremely common pattern, at least as common as class-oriented code.
 
 I comment-annotated `(1)`, `(3)`, and `(4)` in that snippet, which roughly correspond to steps 1, 3, and 4 of the `new` operation. But where's step 2?
 
@@ -95,7 +98,7 @@ point.toString();           // (3,4)
 
 Now you see the `__proto__` assignment that's setting up the internal `[[Prototype]]` linkage, which was the missing step 2. I used the `__proto__` here merely for illustration purposes; using `setPrototypeOf(..)` as shown in Chapter 4 would have accomplished the same task.
 
-### *New* Factory Instance
+#### _New_ Factory Instance
 
 What do you think would happen if we used `new` to invoke the `Point2d(..)` function as shown here?
 
@@ -107,11 +110,11 @@ anotherPoint.toString(5,6);         // (5,6)
 
 Wait! What's going on here? A regular, non-`class` factory function in invoked with the `new` keyword, as if it was a `class`. Does that change anything about the outcome of the code?
 
-No... and yes. `anotherPoint` here is exactly the same object as it would have been had I not used `new`. But! The object that `new` creates, links, and assigns as `this` context? *That* object was completely ignored and thrown away, ultimately to be garbage collected by JS. Unfortunately, the JS engine cannot predict that you're not going to use the object that you asked `new` to create, so it always still gets cteated even if it goes unused.
+No... and yes. `anotherPoint` here is exactly the same object as it would have been had I not used `new`. But! The object that `new` creates, links, and assigns as `this` context? _That_ object was completely ignored and thrown away, ultimately to be garbage collected by JS. Unfortunately, the JS engine cannot predict that you're not going to use the object that you asked `new` to create, so it always still gets cteated even if it goes unused.
 
-That's right! Using a `new` keyword against a factory function might *feel* more ergonomic or familiar, but it's quite wasteful, in that it creates **two** objects, and wastefully throws one of them away.
+That's right! Using a `new` keyword against a factory function might _feel_ more ergonomic or familiar, but it's quite wasteful, in that it creates **two** objects, and wastefully throws one of them away.
 
-### Factory Initialization
+#### Factory Initialization
 
 In the current code example, the `Point2d(..)` function still looks an awful lot like a normal `constructor(..)` of a `class` definition. But what if we moved the initialization code to a separate function, say named `init(..)`:
 
@@ -147,7 +150,7 @@ var point = Point2d(3,4);
 point.toString();           // (3,4)
 ```
 
-The `instance.init(..)` call makes use of the `[[Prototype]]` linkage set up via `__proto__` assignment. Thus, it *delegates* up the prototype chain to `prototypeObj.init(..)`, and invokes it with a `this` context of `instance` -- via *implicit context* assignment (see Chapter 4).
+The `instance.init(..)` call makes use of the `[[Prototype]]` linkage set up via `__proto__` assignment. Thus, it _delegates_ up the prototype chain to `prototypeObj.init(..)`, and invokes it with a `this` context of `instance` -- via _implicit context_ assignment (see Chapter 4).
 
 Let's continue the deconstruction. Get ready for a switcheroo!
 
@@ -193,7 +196,6 @@ point.toString();           // (3,4)
 What operations does `Object.create(..)` perform?
 
 1. create a brand new empty object, out of thin air.
-
 2. link the `[[Prototype]]` of that new empty object to the function's `.prototype` object.
 
 If those look familiar, it's because those are exactly the same first two steps of the `new` keyword (see Chapter 4).
@@ -220,11 +222,11 @@ point.toString();           // (3,4)
 
 Hmmm. Take a few moments to ponder what's been derived here. How does it compare to the `class` approach?
 
-This pattern ditches the `class` and `new` keywords, but accomplishes the exact same outcome. The *cost*? The single `new` operation was broken up into two statements: `Object.create(Point2d)` and `point.init(3,4)`.
+This pattern ditches the `class` and `new` keywords, but accomplishes the exact same outcome. The _cost_? The single `new` operation was broken up into two statements: `Object.create(Point2d)` and `point.init(3,4)`.
 
-#### Help Me Reconstruct!
+**Help Me Reconstruct!**
 
-If having those two operations separate bothers you -- is it *too deconstructed*!? -- they can always be recombined in a little factory helper:
+If having those two operations separate bothers you -- is it _too deconstructed_!? -- they can always be recombined in a little factory helper:
 
 ```js
 function make(objType,...args) {
@@ -238,8 +240,8 @@ var point = make(Point2d,3,4);
 point.toString();           // (3,4)
 ```
 
-| TIP: |
-| :--- |
+| TIP:                                                                                                                                                                                               |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Such a `make(..)` factory function helper works generally for any object-type, as long as you follow the implied convention that each `objType` you link to has a function named `init(..)` on it. |
 
 And of course, you can still create as many instances as you'd like:
@@ -250,25 +252,25 @@ var point = make(Point2d,3,4);
 var anotherPoint = make(Point2d,5,6);
 ```
 
-## Ditching Class Thinking
+### Ditching Class Thinking
 
-Quite frankly, the *deconstruction* we just went through only ends up in slightly different, and maybe slightly better or slightly worse, code as compared to the `class` style. If that's all delegation was about, it probably wouldn't even be useful enough for more than a footnote, much less a whole chapter.
+Quite frankly, the _deconstruction_ we just went through only ends up in slightly different, and maybe slightly better or slightly worse, code as compared to the `class` style. If that's all delegation was about, it probably wouldn't even be useful enough for more than a footnote, much less a whole chapter.
 
 But here's where we're going to really start pushing the class-oriented thinking itself, not just the syntax, aside.
 
-Class-oriented design inherently creates a hierarchy of *classification*, meaning how we divide up and group characteristics, and then stack them vertically in an inheritance chain. Moreover, defining a subclass is a specialization of the generalized base class. Instantiating is a specialization of the generalized class.
+Class-oriented design inherently creates a hierarchy of _classification_, meaning how we divide up and group characteristics, and then stack them vertically in an inheritance chain. Moreover, defining a subclass is a specialization of the generalized base class. Instantiating is a specialization of the generalized class.
 
-Behavior in a traditional class hierarchy is a veritcal composition through the layers of the inheritance chain. Attempts have been made over the decades, and even become rather popular at times, to flatten out deep hierarchies of inheritance, and favor a more horizontal composition through *mixins* and related ideas.
+Behavior in a traditional class hierarchy is a veritcal composition through the layers of the inheritance chain. Attempts have been made over the decades, and even become rather popular at times, to flatten out deep hierarchies of inheritance, and favor a more horizontal composition through _mixins_ and related ideas.
 
-I'm not asserting there's anything wrong with those ways of approaching code. But I am saying that they aren't *naturally* how JS works, so adopting them in JS has been a long, winding, complicated road, and has variously accreted lots of nuanced syntax to retrofit on top of JS's core `[[Prototype]]` and `this` pillar.
+I'm not asserting there's anything wrong with those ways of approaching code. But I am saying that they aren't _naturally_ how JS works, so adopting them in JS has been a long, winding, complicated road, and has variously accreted lots of nuanced syntax to retrofit on top of JS's core `[[Prototype]]` and `this` pillar.
 
-For the rest of this chapter, I intend to discard both the syntax of `class` *and* the thinking of *class*.
+For the rest of this chapter, I intend to discard both the syntax of `class` _and_ the thinking of _class_.
 
-## Delegation Illustrated
+### Delegation Illustrated
 
-So what is delegation about? At its core, it's about two or more *things* sharing the effort of completing a task.
+So what is delegation about? At its core, it's about two or more _things_ sharing the effort of completing a task.
 
-Instead of defining a `Point2d` general parent *thing* that represents shared behavior that a set of one or more child `point` / `anotherPoint` *things* inherit from, delegation moves us to building our program with discrete peer *things* that cooperate with each other.
+Instead of defining a `Point2d` general parent _thing_ that represents shared behavior that a set of one or more child `point` / `anotherPoint` _things_ inherit from, delegation moves us to building our program with discrete peer _things_ that cooperate with each other.
 
 I'll sketch that out in some code:
 
@@ -309,27 +311,27 @@ I've defined `Coordinates` as a concrete object that holds some behaviors I asso
 
 I then create two more concrete objects, `point` and `anotherPoint`.
 
-`point` has no specific `[[Prototype]]` (default: `Object.prototype`). Using *explicit context* assignment (see Chapter 4), I invoke the `Coordinates.setXY(..)` and `Inspect.toString()` utilities in the context of `point`. That is what I call *explicit delegation*.
+`point` has no specific `[[Prototype]]` (default: `Object.prototype`). Using _explicit context_ assignment (see Chapter 4), I invoke the `Coordinates.setXY(..)` and `Inspect.toString()` utilities in the context of `point`. That is what I call _explicit delegation_.
 
-`anotherPoint` is `[[Prototype]]` linked to `Coordinates`, mostly for a bit of convenience. That lets me use *implicit context* assignment with `anotherPoint.setXY(..)`. But I can still *explicitly* share `anotherPoint` as context for the `Inspect.toString()` call. That's what I call *implicit delegation*.
+`anotherPoint` is `[[Prototype]]` linked to `Coordinates`, mostly for a bit of convenience. That lets me use _implicit context_ assignment with `anotherPoint.setXY(..)`. But I can still _explicitly_ share `anotherPoint` as context for the `Inspect.toString()` call. That's what I call _implicit delegation_.
 
-**Don't miss *this*:** We still accomplished composition: we composed the behaviors from `Coordinates` and `Inspect`, during runtime function invocations with `this` context sharing. We didn't have to author-combine those behaviors into a single `class` (or base-subclass `class` hierarchy) for `point` / `anotherPoint` to inherit from. I like to call this runtime composition, **virtual composition**.
+**Don't miss **_**this**_**:** We still accomplished composition: we composed the behaviors from `Coordinates` and `Inspect`, during runtime function invocations with `this` context sharing. We didn't have to author-combine those behaviors into a single `class` (or base-subclass `class` hierarchy) for `point` / `anotherPoint` to inherit from. I like to call this runtime composition, **virtual composition**.
 
-The *point* here is: none of these four objects is a parent or child. They're all peers of each other, and they all have different purposes. We can organize our behavior in logical chunks (on each respective object), and share the context via `this` (and, optionally `[[Prototype]]` linkage), which ends up with the same composition outcomes as the other patterns we've examined thus far in the book.
+The _point_ here is: none of these four objects is a parent or child. They're all peers of each other, and they all have different purposes. We can organize our behavior in logical chunks (on each respective object), and share the context via `this` (and, optionally `[[Prototype]]` linkage), which ends up with the same composition outcomes as the other patterns we've examined thus far in the book.
 
-*That* is the heart of the **delegation** pattern, as JS embodies it.
+_That_ is the heart of the **delegation** pattern, as JS embodies it.
 
-| TIP: |
-| :--- |
+| TIP:                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | In the first edition of this book series, this book ("this & Object Prototypes") coined a term, "OLOO", which stands for "Objects Linked to Other Objects" -- to stand in contrast to "OO" ("Object Oriented"). In this preceding example, you can see the essence of OLOO: all we have are objects, linked to and cooperating with, other objects. I find this beautiful in its simplicity. |
 
-## Composing Peer Objects
+### Composing Peer Objects
 
-Let's take *this delegation* even further.
+Let's take _this delegation_ even further.
 
-In the preceding snippet, `point` and `anotherPoint` merely held data, and the behaviors they delegated to were on other objects (`Coordinates` and `Inspect`). But we can add behaviors directly to any of the objects in a delegation chain, and those behaviors can even interact with each other, all through the magic of *virtual composition* (`this` context sharing).
+In the preceding snippet, `point` and `anotherPoint` merely held data, and the behaviors they delegated to were on other objects (`Coordinates` and `Inspect`). But we can add behaviors directly to any of the objects in a delegation chain, and those behaviors can even interact with each other, all through the magic of _virtual composition_ (`this` context sharing).
 
-To illustrate, we'll evolve our current *point* example a fair bit. And as a bonus we'll actually draw our points on a `<canvas>` element in the DOM. Let's take a look:
+To illustrate, we'll evolve our current _point_ example a fair bit. And as a bonus we'll actually draw our points on a `<canvas>` element in the DOM. Let's take a look:
 
 ```js
 var Canvas = {
@@ -420,23 +422,23 @@ OK, that's a lot of code to digest. Take your time and re-read the snippet sever
 
 Make sure you see and understand the interactions between these three concrete objects.
 
-`ControlPoint` is linked (via `__proto__`) to *implicitly delegate* (`[[Prototype]]` chain) to `Coordinates`.
+`ControlPoint` is linked (via `__proto__`) to _implicitly delegate_ (`[[Prototype]]` chain) to `Coordinates`.
 
-Here's an *explicit delegation*: `Canvas.setOrigin.call(ControlPoint,100,100);`; I'm invoking the `Canvas.setOrigin(..)` call in the context of `ControlPoint`. That has the effect of sharing `ctx` with `setOrigin(..)`, via `this`.
+Here's an _explicit delegation_: `Canvas.setOrigin.call(ControlPoint,100,100);`; I'm invoking the `Canvas.setOrigin(..)` call in the context of `ControlPoint`. That has the effect of sharing `ctx` with `setOrigin(..)`, via `this`.
 
-`ControlPoint.setXY(..)` delegates *implicitly* to `Coordinates.setXY(..)`, but still in the context of `ControlPoint`. Here's a key detail that's easy to miss: see the `this.render()` inside of `Coordinates.setXY(..)`? Where does that come from? Since the `this` context is `ControlPoint` (not `Coordinates`), it's invoking `ControlPoint.render()`.
+`ControlPoint.setXY(..)` delegates _implicitly_ to `Coordinates.setXY(..)`, but still in the context of `ControlPoint`. Here's a key detail that's easy to miss: see the `this.render()` inside of `Coordinates.setXY(..)`? Where does that come from? Since the `this` context is `ControlPoint` (not `Coordinates`), it's invoking `ControlPoint.render()`.
 
-`ControlPoint.render()` *explicitly delegates* to `Canvas.renderScene()`, again still in the `ControlPoint` context. `renderScene()` calls `this.draw()`, but where does that come from? Yep, still from `ControlPoint` (via `this` context).
+`ControlPoint.render()` _explicitly delegates_ to `Canvas.renderScene()`, again still in the `ControlPoint` context. `renderScene()` calls `this.draw()`, but where does that come from? Yep, still from `ControlPoint` (via `this` context).
 
-And `ControlPoint.draw()`? It *explicitly delegates* to `Canvas.pixel(..)`, yet again still in the `ControlPoint` context.
+And `ControlPoint.draw()`? It _explicitly delegates_ to `Canvas.pixel(..)`, yet again still in the `ControlPoint` context.
 
-All three objects have methods that end up invoking each other. But these calls aren't particularly hard-wired. `Canvas.renderScene()` doesn't call `ControlPoint.draw()`, it calls `this.draw()`. That's important, because it means that `Canvas.renderScene()` is more flexible to use in a different `this` context -- e.g., against another kind of *point* object besides `ControlPoint`.
+All three objects have methods that end up invoking each other. But these calls aren't particularly hard-wired. `Canvas.renderScene()` doesn't call `ControlPoint.draw()`, it calls `this.draw()`. That's important, because it means that `Canvas.renderScene()` is more flexible to use in a different `this` context -- e.g., against another kind of _point_ object besides `ControlPoint`.
 
 It's through the `this` context, and the `[[Prototype]]` chain, that these three objects basically are mixed (composed) virtually together, as needed at each step, so that they work together **as if they're one object rather than three sepearate objects**.
 
-That's the *beauty* of virtual composition as realized by the delegation pattern in JS.
+That's the _beauty_ of virtual composition as realized by the delegation pattern in JS.
 
-### Flexible Context
+#### Flexible Context
 
 I mentioned above that we can pretty easily add other concrete objects into the mix. Here's an example:
 
@@ -497,11 +499,11 @@ That's pretty nice, I think!
 
 But I think another less-obvious benefit is that having objects linked dynamically via `this` context tends to make testing different parts of the program independently, somewhat easier.
 
-For example, `Object.setPrototypeOf(..)` can be used to dynamically change the `[[Prototype]]` linkage of an object, delegating it to a different object such as a mock object. Or you could dynamically redefine `GuideLine.draw()` and `GuideLine.render()` to *explicitly delegate* to a `MockCanvas` instead of `Canvas`.
+For example, `Object.setPrototypeOf(..)` can be used to dynamically change the `[[Prototype]]` linkage of an object, delegating it to a different object such as a mock object. Or you could dynamically redefine `GuideLine.draw()` and `GuideLine.render()` to _explicitly delegate_ to a `MockCanvas` instead of `Canvas`.
 
 The `this` keyword, and the `[[Prototype]]` link, are a tremendously flexible mechanism when you understand and leverage them fully.
 
-## Why *This*?
+### Why _This_?
 
 OK, so it's hopefully clear that the delegation pattern leans heavily on implicit input, sharing context via `this` rather than through an explicit parameter.
 
@@ -589,6 +591,6 @@ But in my opinion, the "cost" of avoiding virtual composition through delegation
 
 In fact, I'd never advocate that style of code at all. If you want to avoid delegation, it's probably best to just stick to `class` style code, as seen in Chapter 3. As an exercise left to the reader, try to convert the earlier `ControlPoint` / `GuideLine` code snippets to use `class`.
 
-[^TreatyOfOrlando]: "Treaty of Orlando"; Henry Lieberman, Lynn Andrea Stein, David Ungar; Oct 6, 1987; https://web.media.mit.edu/~lieber/Publications/Treaty-of-Orlando-Treaty-Text.pdf ; PDF; Accessed July 2022
+\[^TreatyOfOrlando]: "Treaty of Orlando"; Henry Lieberman, Lynn Andrea Stein, David Ungar; Oct 6, 1987; https://web.media.mit.edu/\~lieber/Publications/Treaty-of-Orlando-Treaty-Text.pdf ; PDF; Accessed July 2022
 
-[^ClassVsPrototype]: "Classes vs. Prototypes, Some Philosophical and Historical Observations"; Antero Taivalsaari; Apr 22, 1996; https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.56.4713&rep=rep1&type=pdf ; PDF; Accessed July 2022
+\[^ClassVsPrototype]: "Classes vs. Prototypes, Some Philosophical and Historical Observations"; Antero Taivalsaari; Apr 22, 1996; https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.56.4713\&rep=rep1\&type=pdf ; PDF; Accessed July 2022
